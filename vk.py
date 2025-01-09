@@ -1,14 +1,13 @@
 import streamlit as st
-st.set_page_config(page_title="Keyword Clustering (DBSCAN + UMAP)", layout="wide")
-
-import os
 import numpy as np
-from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import DBSCAN
-import umap
+import umap.umap_ as umap
 import plotly.express as px
 import plotly.graph_objects as go
+
+# Set page configuration to wide layout
+st.set_page_config(page_title="Keyword Clustering (DBSCAN + UMAP)", layout="wide")
 
 ###############################################################################
 # Utility Functions
@@ -65,13 +64,11 @@ type of crypto wallet\t10
 """
 
 @st.cache_resource
-def load_local_model(model_name: str):
+def load_local_model():
     """
-    Loads a local sentence-transformers model once and caches it.
-    By default, 'paraphrase-MiniLM-L6-v2' is a lightweight and fast model.
-    For more accuracy (and bigger size), try 'all-mpnet-base-v2'.
+    Loads the all-mpnet-base-v2 model and caches it.
     """
-    return SentenceTransformer(model_name)
+    return SentenceTransformer("all-mpnet-base-v2")
 
 def cluster_and_visualize(keywords, volumes, model, eps_val, min_samples_val):
     """
@@ -134,7 +131,8 @@ def cluster_and_visualize(keywords, volumes, model, eps_val, min_samples_val):
 
     fig.update_layout(
         title="Keyword Clusters (DBSCAN + UMAP)",
-        legend_title="Cluster Label"
+        legend_title="Cluster Label",
+        width=1200  # Set a fixed width for the Plotly chart
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -163,12 +161,8 @@ def main():
     st.title("Local Embeddings + DBSCAN + UMAP for Keyword Clustering")
     st.write("Paste your keyword-volume pairs below, then adjust parameters.")
 
-    # Model selection (lightweight vs. bigger)
-    model_choice = st.selectbox("Select Embedding Model", [
-        "all-mpnet-base-v2",
-        "paraphrase-MiniLM-L6-v2"
-    ])
-    model = load_local_model(model_choice)
+    # Load the model
+    model = load_local_model()
 
     # Sliders for DBSCAN parameters
     eps_val = st.slider("DBSCAN eps (distance threshold)", 0.4, 3.0, 0.5, 0.1)
